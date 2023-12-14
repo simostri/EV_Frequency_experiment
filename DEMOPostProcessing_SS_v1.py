@@ -29,10 +29,10 @@ DefFontSize = 20
 EVSEcolors = ['blue', 'red', 'green']
 
 # Retrieve data
-data_PIOT = pd.read_csv('./Data/prova1_exp_20231201.csv')
+data_PIOT = pd.read_csv('./Data/prova1DEMO2023.csv')
 
-t_start_long = data_PIOT['timestamp'].iloc[4000]
-t_end_long = data_PIOT['timestamp']#.iloc[-450]
+t_start_long = data_PIOT['timestamp'].iloc[1500]
+t_end_long = data_PIOT['timestamp'].iloc[-450]
 data_PIOT_long = data_PIOT[(data_PIOT['timestamp'] >= t_start_long) & (data_PIOT['timestamp'] <= t_end_long)]
 time_PIOT_long = data_PIOT_long['timestamp']
 time_PIOT_long= pd.to_datetime(time_PIOT_long, unit='ms')
@@ -41,8 +41,8 @@ tick_resolution_long = 300
 # Retrieve data
 data_PIOT = pd.read_csv('./Data/prova1DEMO2023.csv')
 
-t_start_short = data_PIOT['timestamp'].iloc[4000]
-t_end_short = data_PIOT['timestamp']#.iloc[-450]
+t_start_short = data_PIOT['timestamp'].iloc[-650]
+t_end_short = data_PIOT['timestamp'].iloc[-450]
 data_PIOT_short = data_PIOT[(data_PIOT['timestamp'] >= t_start_short) & (data_PIOT['timestamp'] <= t_end_short)]
 time_PIOT_short = data_PIOT_short['timestamp']
 time_PIOT_short= pd.to_datetime(time_PIOT_short, unit='ms')
@@ -108,7 +108,7 @@ plt.show()
 fig, ax1 = plt.subplots(figsize=(15, 5))
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
-#ax1.set_ylim(49.8, 50.2) 
+ax1.set_ylim(49.8, 50.2) 
 ax1.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
 ax1.set_xlabel('Time [s]', fontsize=DefFontSize * 1)
 xticks = ax1.get_xticks()
@@ -117,7 +117,7 @@ ax1.set_xticks(xticks)
 ax1.set_xticklabels(xticklabels, rotation=90)
 ax2 = ax1.twinx()
 line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] -data_PIOT_long['REG_LINE_ACP_2'] -data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
-#ax2.set_ylim(10, 20)
+ax2.set_ylim(10, 20)
 ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1,color=EVSEcolors[1])
 
 # Combine lines and labels from both axes for the legend
@@ -175,7 +175,7 @@ fig, ax5 = plt.subplots(figsize=(15, 5))
 ax5.grid(True)
 line1, = ax5.plot(time_PIOT_short, data_PIOT_short['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
 ax5.set_ylim(49.950, 50.075) 
-#ax5.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
+ax5.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
 ax5.set_xlabel('Time [h:m]', fontsize=DefFontSize * 1)
 xticks = ax5.get_xticks()
 xticklabels = ax5.get_xticklabels()
@@ -183,7 +183,7 @@ ax5.set_xticks(xticks)
 ax5.set_xticklabels(xticklabels, rotation=90)
 ax6 = ax5.twinx()
 line2, = ax6.plot(time_PIOT_short, -data_PIOT_short['REG_LINE_ACP_1'] -data_PIOT_short['REG_LINE_ACP_2'] -data_PIOT_short['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
-#ax6.set_ylim(13.5, 17)
+ax6.set_ylim(13.5, 17)
 ax6.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1, color=EVSEcolors[1])
 
 # Combine lines and labels from both axes for the legend
