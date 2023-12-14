@@ -1,9 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 12 11:51:18 2023
 
-@author: klape
-"""
+# -*- coding: utf-8 -*-
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -104,36 +100,76 @@ plt.xticks(rotation=90)
 #plt.savefig('DEMOoutput\\frequency.pdf', format='pdf')
 plt.show()
 '''
+fig, (ax1, ax5) = plt.subplots(nrows=2, ncols=1, figsize=(15, 10), sharex=True)
 
-fig, ax1 = plt.subplots(figsize=(15, 5))
+# First subplot
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
 ax1.set_ylim(49.8, 50.2) 
-ax1.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
-ax1.set_xlabel('Time [s]', fontsize=DefFontSize * 1)
+ax1.set_ylabel('Frequency [Hz]', fontsize=DefFontSize * 1.2, color=EVSEcolors[0])
+
+ax2 = ax1.twinx()
+line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label='Cluster Power')
+ax2.set_ylim(10, 20)
+ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1.2, color=EVSEcolors[1])
+
+# Combine lines and labels from both axes for the legend
+lines = [line1, line2]
+labels = [l.get_label() for l in lines]
+ax1.legend(lines, labels, loc="best")
+
+# Date format for the first subpl'ot'
+'''date_format_long = mdates.DateFormatter('%H:%M')
+ax2.xaxis.set_major_locator(mdates.MinuteLocator(interval=2))
+ax2.xaxis.set_major_formatter(date_format_long)
 xticks = ax1.get_xticks()
 xticklabels = ax1.get_xticklabels()
 ax1.set_xticks(xticks)
 ax1.set_xticklabels(xticklabels, rotation=90)
+'''
 ax2 = ax1.twinx()
 line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] -data_PIOT_long['REG_LINE_ACP_2'] -data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
 ax2.set_ylim(10, 20)
 ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1,color=EVSEcolors[1])
 
-# Combine lines and labels from both axes for the legend
-lines = [line1, line2]
-labels = [l.get_label() for l in lines]
-
-# Set the unified legend on ax1 or ax2
-ax1.legend(lines, labels, loc="best")
-
-date_format = mdates.DateFormatter('%H:%M')
+'''date_format = mdates.DateFormatter('%H:%M')
 ax2.xaxis.set_major_locator(mdates.MinuteLocator(interval=2))
-ax2.xaxis.set_major_formatter(date_format)
+ax2.xaxis.set_major_formatter(date_format)'''
+
 plt.xticks(rotation=90)
 plt.tight_layout()
 plt.show()
 plt.savefig('./graphs/Power_and_frequency', format='png')
+
+
+
+# Second subplot
+ax5.grid(True)
+line3, = ax5.plot(time_PIOT_short, data_PIOT_short['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
+ax5.set_ylim(49.950, 50.075) 
+ax5.set_ylabel('Frequency [Hz]', fontsize=DefFontSize * 1.2, color=EVSEcolors[0])
+ax5.set_xlabel('Time', fontsize=DefFontSize * 1.2)
+
+ax6 = ax5.twinx()
+line4, = ax6.plot(time_PIOT_short, -data_PIOT_short['REG_LINE_ACP_1'] - data_PIOT_short['REG_LINE_ACP_2'] - data_PIOT_short['REG_LINE_ACP_3'], color=EVSEcolors[1], label='Cluster Power')
+ax6.set_ylim(13.5, 17)
+ax6.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1.2, color=EVSEcolors[1])
+
+# Combine lines and labels from both axes for the legend
+lines = [line3, line4]
+labels = [l.get_label() for l in lines]
+ax5.legend(lines, labels, loc="best")
+
+# Date format for the second subplot
+date_format_short = mdates.DateFormatter('%M:%S')
+ax6.xaxis.set_major_locator(mdates.SecondLocator(interval=7))
+ax6.xaxis.set_major_formatter(date_format_short)
+
+plt.xticks(rotation=90)
+plt.tight_layout()
+
+# Show the plot
+
 
 
 # PRIORITY
@@ -169,35 +205,4 @@ plt.xticks(rotation=90)
 plt.tight_layout()
 plt.savefig('./graphs/Power_to_EVs', format='png')
 plt.show()
-
-
-fig, ax5 = plt.subplots(figsize=(15, 5))
-ax5.grid(True)
-line1, = ax5.plot(time_PIOT_short, data_PIOT_short['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
-ax5.set_ylim(49.950, 50.075) 
-ax5.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
-ax5.set_xlabel('Time [h:m]', fontsize=DefFontSize * 1)
-xticks = ax5.get_xticks()
-xticklabels = ax5.get_xticklabels()
-ax5.set_xticks(xticks)
-ax5.set_xticklabels(xticklabels, rotation=90)
-ax6 = ax5.twinx()
-line2, = ax6.plot(time_PIOT_short, -data_PIOT_short['REG_LINE_ACP_1'] -data_PIOT_short['REG_LINE_ACP_2'] -data_PIOT_short['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
-ax6.set_ylim(13.5, 17)
-ax6.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1, color=EVSEcolors[1])
-
-# Combine lines and labels from both axes for the legend
-lines = [line1, line2]
-labels = [l.get_label() for l in lines]
-
-# Set the unified legend on ax5 or ax6
-ax5.legend(lines, labels, loc="best")
-
-date_format = mdates.DateFormatter('%M:%S')
-ax6.xaxis.set_major_locator(mdates.SecondLocator(interval=7))
-ax6.xaxis.set_major_formatter(date_format)
-plt.xticks(rotation=90)
-plt.tight_layout()
-plt.show()
-plt.savefig('./graphs/Power_and_frequency_short', format='png')
 
