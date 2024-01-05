@@ -48,7 +48,70 @@ plug_state = np.zeros((6, len(data_PIOT['Plug1_status'])))
 
 
 
-fig, ax1 = plt.subplots(figsize=(15, 5))
+ACP = -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3']
+freq = data_PIOT_long['REG_FREQUENCY']
+
+cross_correlation = np.correlate(ACP - np.mean(ACP),freq- np.mean(freq),  mode='full')
+lags = np.arange(-(len(freq) - 1), len(freq))
+
+plt.figure(figsize=(10, 6))
+plt.plot(lags, cross_correlation - 1.58)
+plt.xlim(0, 30) 
+
+plt.title('Cross-correlation between Curve 1 and Curve 2')
+plt.xlabel('Lags')
+plt.ylabel('Cross-correlation')
+plt.grid(True)
+plt.savefig('./graphs/Cross_corr_priority.pdf')
+
+rmse = np.sqrt(np.mean((np.array(ACP) - np.array(freq))**2))
+average_error = rmse / len(ACP)
+
+
+# Create a figure with three subplots
+fig, (ax1, ax3, ax4) = plt.subplots(nrows=3, ncols=1, figsize=(15, 12), sharex=True)
+
+# First subplot
+ax1.grid(True)
+line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
+ax1.set_ylim(49.97, 50.055) 
+ax1.set_ylabel('Frequency [Hz]', fontsize=DefFontSize * 1, color=EVSEcolors[0])
+ax2 = ax1.twinx()
+line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label='Cluster Power')
+ax2.set_ylim(13.5, 15.75)
+ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1, color=EVSEcolors[1])
+ax1.legend([line1, line2], [line1.get_label(), line2.get_label()], loc="best")
+
+# Second subplot
+ax3.grid(True)
+ax3.plot(time_PIOT_long, data_PIOT_long['Plug1_priority_broadcast'], label='Priority of EV1', color=EVSEcolors[0])
+ax3.plot(time_PIOT_long, data_PIOT_long['Plug2_priority_broadcast'], label='Priority of EV2', color=EVSEcolors[1])
+ax3.set_ylabel('Priority of the EV', fontsize=DefFontSize * 1)
+ax3.legend(loc="best")
+
+# Third subplot
+ax4.grid(True)
+line44, = ax4.plot(time_PIOT_long, data_PIOT_long['Plug1_measured_P'], label='Power to EV1', color=EVSEcolors[0])
+ax4.set_ylabel('EV1 Consumed\n Power [kW]', fontsize=DefFontSize * 1, color = EVSEcolors[0])
+ax4.set_xlabel('Time [h:m]', fontsize=DefFontSize * 1)
+ax4.legend(loc="best")
+ax4.set_ylim(4.5, 6.3)
+ax55 = ax4.twinx()
+line55, = ax55.plot(time_PIOT_long, data_PIOT_long['Plug2_measured_P'], color=EVSEcolors[1], label='Power to EV2')
+ax55.set_ylabel('EV2 Consumed\nPower [kW]', fontsize=DefFontSize * 1, color = EVSEcolors[1])
+ax4.legend([line44, line55], [line44.get_label(), line55.get_label()], loc="best")
+ax55.set_ylim(8.3, 8.7)
+
+# Show x-ticks only on the bottom plot
+plt.setp(ax1.get_xticklabels(), visible=False)
+plt.setp(ax3.get_xticklabels(), visible=False)
+plt.xticks(rotation=90)
+
+plt.tight_layout()
+plt.savefig('./graphs/Combined_All_Plots.pdf')
+#plt.show()
+
+'''fig, ax1 = plt.subplots(figsize=(15, 5))
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
 ax1.set_ylim(49.97, 50.055) 
@@ -115,90 +178,5 @@ ax55.set_ylim(8.3, 8.7)
 
 plt.tight_layout()
 plt.savefig('./graphs/Power_to_EVs_priority', format='png')
-plt.show()
-
-'''
-fig, ax5 = plt.subplots(figsize=(15, 5))
-ax5.grid(True)
-line1, = ax5.plot(time_PIOT_short, data_PIOT_short['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
-ax5.set_ylim(49.96, 50.06) 
-#ax5.set_ylabel('Frequency', fontsize=DefFontSize * 1,color=EVSEcolors[0])
-#ax5.set_xlabel('Time [h:m]', fontsize=DefFontSize * 1)
-#xticks = ax5.get_xticks()
-#xticklabels = ax5.get_xticklabels()
-#ax5.set_xticks(xticks)
-#ax5.set_xticklabels(xticklabels, rotation=90)
-ax6 = ax5.twinx()
-line2, = ax6.plot(time_PIOT_short, -data_PIOT_short['REG_LINE_ACP_1'] -data_PIOT_short['REG_LINE_ACP_2'] -data_PIOT_short['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
-ax6.set_ylim(13, 15.6)
-ax6.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1, color=EVSEcolors[1])
-
-# Combine lines and labels from both axes for the legend
-lines = [line1, line2]
-labels = [l.get_label() for l in lines]
-
-# Set the unified legend on ax5 or ax6
-ax5.legend(lines, labels, loc="best")
-
-#date_format = mdates.DateFormatter('%M:%S')
-#ax6.xaxis.set_major_locator(mdates.SecondLocator(interval=7))
-#ax6.xaxis.set_major_formatter(date_format)
-plt.xticks(rotation=90)
-plt.tight_layout()
-plt.show()
-plt.savefig('./graphs/Power_and_frequency_short', format='png')
-'''
-"""
-for i in range(len(data_PIOT['Plug1_status'])):
-    if data_PIOT['Plug2_status'][i] == 'Idle':
-        plug_state[2, i] = 0
-    elif data_PIOT['Plug2_status'][i] == 'Connected':
-        plug_state[2, i] = 0.5
-    elif data_PIOT['Plug2_status'][i] == 'Charging':
-        plug_state[2, i] = 1
-    else:
-        plug_state[2, i] = -0.5
-    if data_PIOT['Plug3_status'][i] == 'Idle':
-        plug_state[3, i] = 0
-    elif data_PIOT['Plug3_status'][i] == 'Connected':
-        plug_state[3, i] = 0.5
-    elif data_PIOT['Plug3_status'][i] == 'Charging':
-        plug_state[3, i] = 1
-    else:
-        plug_state[3, i] = -0.5
-"""
-# PLUG STATE
-'''
-fig1, ax = plt.subplots()
-custom_y_labels = ['Error','Idle','Connected','Charging']
-custom_y_positions = [-.5,0,.5,1]
-plt.plot(time_PIOT, plug_state[2, :], label='EV 2', color=EVSEcolors[0])
-plt.plot(time_PIOT, plug_state[3, :], label='EV 3', color=EVSEcolors[1])
-plt.ylim(-0.55, 1.1)
-
-ax.set_yticks(custom_y_positions)
-ax.set_yticklabels(custom_y_labels)
-plt.ylabel(r'$s_{EVSE}$', fontsize=DefFontSize * 1)
-plt.xlabel(r'time $[s]$', fontsize=DefFontSize * 1)
-plt.legend(loc="best")
-#plt.savefig('DEMOoutput\\state.pdf', format='pdf')
-'''
-# FREQUENCY
-'''
-fig, ax1 = plt.subplots(figsize=(15, 5))
-ax1.grid(True)
-ax1.plot(time_PIOT, data_PIOT['REG_FREQUENCY'], label='frequency', color=EVSEcolors[0])
-ax1.set_ylim(49.8, 50.2) 
-ax1.set_ylabel('Frequency', fontsize=DefFontSize * 1)
-ax1.set_xlabel('Time [s]', fontsize=DefFontSize * 1)
-ax2 = ax1.twinx()  
-ax2.set_ylabel('Cluster power [kW]', color=EVSEcolors[1])
-ax2.plot(time_PIOT, -data_PIOT['REG_LINE_ACP_1'] -data_PIOT['REG_LINE_ACP_2'] -data_PIOT['REG_LINE_ACP_3'], color=EVSEcolors[1], label= 'Cluster Power')
-ax2.set_ylim(10, 20)
-plt.legend(loc="best")
-date_format = mdates.DateFormatter('%H:%M')
-ax2.xaxis.set_major_formatter(date_format)
-plt.xticks(rotation=90)
-#plt.savefig('DEMOoutput\\frequency.pdf', format='pdf')
 plt.show()
 '''

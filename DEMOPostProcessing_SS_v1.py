@@ -28,6 +28,8 @@ t_end_long = data_PIOT['timestamp'].iloc[-450]
 data_PIOT_long = data_PIOT[(data_PIOT['timestamp'] >= t_start_long) & (data_PIOT['timestamp'] <= t_end_long)]
 time_PIOT_long = data_PIOT_long['timestamp']
 time_PIOT_long= pd.to_datetime(time_PIOT_long, unit='ms')
+delay = time_PIOT_long.diff()
+
 
 t_start_short = data_PIOT['timestamp'].iloc[-650]
 t_end_short = data_PIOT['timestamp'].iloc[-450]
@@ -35,11 +37,36 @@ data_PIOT_short = data_PIOT[(data_PIOT['timestamp'] >= t_start_short) & (data_PI
 time_PIOT_short = data_PIOT_short['timestamp']
 time_PIOT_short= pd.to_datetime(time_PIOT_short, unit='ms')
 
+
+ACP = -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3']
+freq = data_PIOT_long['REG_FREQUENCY']
+
+cross_correlation = np.correlate(ACP - np.mean(ACP),freq- np.mean(freq),  mode='full')
+lags = np.arange(-(len(freq) - 1), len(freq))
+
+plt.figure(figsize=(10, 6))
+plt.plot(lags, cross_correlation-60)
+plt.xlim(0, 16) 
+
+plt.title('Cross-correlation between Curve 1 and Curve 2')
+plt.xlabel('Lags')
+plt.ylabel('Cross-correlation')
+plt.grid(True)
+plt.savefig('./graphs/Cross_corr.pdf')
+
+lag_at_max_corr = lags[np.argmax(cross_correlation)]
+print("The lag is:", lag_at_max_corr, "time units")
+
+rmse = np.sqrt(np.mean((np.array(ACP) - np.array(freq))**2))
+average_error = rmse / len(ACP)
+
+
+
 fig, (ax1, ax5) = plt.subplots(nrows=2, ncols=1, figsize=(15, 7), sharex=False)
 # First subplot
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
-ax1.set_ylim(49.8, 50.2) 
+ax1.set_ylim(49.9, 50.1) 
 ax1.set_ylabel('Frequency [Hz]', fontsize=DefFontSize * 1.2, color=EVSEcolors[0])
 ax1.set_xlabel('Time [hh:mm]', fontsize=DefFontSize * 1)
 xticks = ax1.get_xticks()
@@ -48,7 +75,7 @@ ax1.set_xticks(xticks)
 ax1.set_xticklabels(xticklabels, rotation=90)
 ax2 = ax1.twinx()
 line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label='Cluster Power')
-ax2.set_ylim(10, 20)
+ax2.set_ylim(12.25, 17.5)
 ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1.2, color=EVSEcolors[1])
 # Combine lines and labels from both axes for the legend
 lines = [line1, line2]
@@ -86,8 +113,7 @@ ax6.xaxis.set_major_locator(mdates.SecondLocator(interval=7))
 ax6.xaxis.set_major_formatter(date_format_short)
 plt.xticks(rotation=90)
 plt.tight_layout()
-
-# Show the plot
+plt.savefig('./graphs/Combined_Power_long_short.pdf')
 
 
 fig, (ax3, ax4) = plt.subplots(nrows=2, ncols=1, figsize=(15, 7), sharex=True)
@@ -114,9 +140,9 @@ ax4.xaxis.set_major_formatter(date_format)
 plt.xticks(rotation=90)
 
 plt.tight_layout()
-plt.savefig('./graphs/Combined_Priorities_and_Power', format='jpg')
+plt.savefig('./graphs/Combined_Priorities_and_Power.pdf')
 plt.show()
-# PRIORITY
+
 
 '''fig, ax3 = plt.subplots(figsize=(15, 5))
 plt.grid(True)
