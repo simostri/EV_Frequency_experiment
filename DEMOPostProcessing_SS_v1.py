@@ -59,28 +59,68 @@ def process_data():
     return data_PIOT_long,data_PIOT_short,time_PIOT_long, time_PIOT_short, ACP, freq
 
 
-def normalize_freq_2_power():
+#def normalize_freq_2_power():
+    #P_bid = 2.25
+    #P_FL = 17.5
+    
+    #k = 2*P_bid/0.2
+    #normalized_freq_1 = (P_FL - P_bid) + k*(freq - 50)
+    #normalized_freq_1 = max( min(Ptot, P_FL), P_FL-2*P_bid)
+
+    # Define the power change per 0.1 Hz deviation from the pivot
+    #power_change_per_0_1Hz = (17.5 - 15.0) / 0.1  # Change in power between 50.1 Hz and 50 Hz
+
+    # Calculate the power for each frequency
+    
+    #return ACP , normalized_freq_1  
+
+def compute_average_error_1():
+    shift_amount_1 = 0  # Number of positions to shift
+    normalized_freq_shifted_1 = np.roll(normalized_freq_1, shift_amount_1)
+    min_length = min(len(normalized_freq_shifted_1), len(ACP))
+    normalized_freq_shifted_1 = normalized_freq_shifted_1[:min_length]
+    ACP_1_adjusted = ACP[:min_length]
+    error_1= np.array(ACP_1_adjusted) - np.array(normalized_freq_shifted_1)
+    mean_error_1 = np.mean(error_1)
+    mean_mean_error_1 = error_1/len(ACP_1_adjusted)    
+    print('np.mean:', mean_error_1)
+    return ACP_1_adjusted, min_length
     
     
-def compute_crosscorrelation():
-    cross_correlation = np.correlate(ACP - np.mean(ACP),freq- np.mean(freq),  mode='full')
+def compute_normalized_crosscorrelation():
+    cross_correlation = np.correlate(ACP- np.mean(ACP),normalized_freq_1- np.mean(normalized_freq_1),  mode='full')
+    #cross_correlation = np.correlate(ACP - np.mean(ACP),freq- np.mean(freq),  mode='full')
     lags = np.arange(-(len(freq) - 1), len(freq))
     
     plt.figure(figsize=(10, 6))
     plt.plot(lags, cross_correlation-60)
-    plt.xlim(0, 16) 
+    plt.xlim(-50, 300) 
     
     plt.title('Cross-correlation between Curve 1 and Curve 2')
     plt.xlabel('Lags')
     plt.ylabel('Cross-correlation')
     plt.grid(True)
-    plt.savefig('./graphs/Cross_corr.pdf')
+    plt.savefig('./graphs/normalized_cross_corr.pdf')
     
     lag_at_max_corr = lags[np.argmax(cross_correlation)]
     print("The lag is:", lag_at_max_corr, "time units")
     
     rmse = np.sqrt(np.mean((np.array(ACP) - np.array(freq))**2))
     average_error = rmse / len(ACP)
+
+def compute_cross_correlation():
+    cross_correlation = np.correlate(ACP - np.mean(ACP),freq- np.mean(freq),  mode='full')
+    lags = np.arange(-(len(freq) - 1), len(freq))
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(lags, cross_correlation) #- 1.58
+    plt.xlim(-50, 300) 
+    
+    plt.title('Cross-correlation between Curve 1 and Curve 2')
+    plt.xlabel('Lags')
+    plt.ylabel('Cross-correlation')
+    plt.grid(True)
+    plt.savefig('./graphs/Cross_corr.pdf')
     
 
 def plot_P_vs_freq():
@@ -137,6 +177,13 @@ def plot_P_vs_freq():
     plt.tight_layout()
     plt.savefig('./graphs/Combined_Power_long_short.pdf')
 
+def plot_P_vs_normalized_freq(ACP_1_adjusted,min_length):
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(0,len(normalized_freq_1[:min_length])),normalized_freq_1[:min_length], label = 'freq_norm')
+    plt.plot(range(0,len(ACP_1_adjusted[:min_length])),ACP_1_adjusted[:min_length], label = 'ACP')
+    plt.legend()
+    
+    
 def plot_individual_values():
     fig, (ax3, ax4) = plt.subplots(nrows=2, ncols=1, figsize=(15, 7), sharex=True)
     
@@ -168,7 +215,11 @@ def plot_individual_values():
 
 
 [data_PIOT_long,data_PIOT_short,time_PIOT_long, time_PIOT_short, ACP, freq] = process_data()
-compute_crosscorrelation()
+#[ACP, normalized_freq_1] = normalize_freq_2_power()
+#ACP_1_adjusted, min_length = compute_average_error_1()
+#plot_P_vs_normalized_freq(ACP_1_adjusted,min_length)
+#compute_normalized_crosscorrelation()
+compute_cross_correlation()
 if include_plot_P_vs_freq:
     plot_P_vs_freq()
 if include_plot_individual_values:
