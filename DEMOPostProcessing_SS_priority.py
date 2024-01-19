@@ -29,16 +29,23 @@ DefFontSize = 20
 EVSEcolors = ['blue', 'red', 'green']
 
 # Retrieve data
-data_PIOT = pd.read_csv('./Data/prova1_exp_20231201.csv')
+data_PIOT = pd.read_csv('./Data/test_2024_01_16/prova1_20240116.csv')
+data_CH = pd.read_csv('./Data/test_2024_01_16/Log_1705405987_CH_acdc-352656103199330.csv')
 
-t_start_long = data_PIOT['timestamp'].iloc[-1100]
-t_end_long = data_PIOT['timestamp'].iloc[-500]
+t_start_CH = data_CH['timestamp']
+t_end_CH = data_CH['timestamp']
+data_CH = data_CH[(data_CH['timestamp'] >= t_start_CH) & (data_CH['timestamp'] <= t_end_CH)]
+time_CH = data_CH['timestamp']
+time_CH= pd.to_datetime(time_CH, unit='ms')
+
+t_start_long = data_PIOT['timestamp'].iloc[-450]
+t_end_long = data_PIOT['timestamp'].iloc[-1]
 data_PIOT_long = data_PIOT[(data_PIOT['timestamp'] >= t_start_long) & (data_PIOT['timestamp'] <= t_end_long)]
 time_PIOT_long = data_PIOT_long['timestamp']
 time_PIOT_long= pd.to_datetime(time_PIOT_long, unit='ms')
 
-t_start_short = data_PIOT['timestamp'].iloc[-1100]
-t_end_short = data_PIOT['timestamp'].iloc[-500]
+t_start_short = data_PIOT['timestamp'].iloc[-450]
+t_end_short = data_PIOT['timestamp'].iloc[-1]
 data_PIOT_short = data_PIOT[(data_PIOT['timestamp'] >= t_start_short) & (data_PIOT['timestamp'] <= t_end_short)]
 time_PIOT_short = data_PIOT_short['timestamp']
 time_PIOT_short= pd.to_datetime(time_PIOT_short, unit='ms')
@@ -74,11 +81,11 @@ fig, (ax1, ax3, ax4) = plt.subplots(nrows=3, ncols=1, figsize=(15, 12), sharex=T
 # First subplot
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
-ax1.set_ylim(49.97, 50.055) 
+ax1.set_ylim(49.9, 50.1) 
 ax1.set_ylabel('Frequency [Hz]', fontsize=DefFontSize * 1, color=EVSEcolors[0])
 ax2 = ax1.twinx()
 line2, = ax2.plot(time_PIOT_long, -data_PIOT_long['REG_LINE_ACP_1'] - data_PIOT_long['REG_LINE_ACP_2'] - data_PIOT_long['REG_LINE_ACP_3'], color=EVSEcolors[1], label='Cluster Power')
-ax2.set_ylim(13.5, 15.75)
+ax2.set_ylim(13, 19)
 ax2.set_ylabel('Cluster power [kW]', fontsize=DefFontSize * 1, color=EVSEcolors[1])
 ax1.legend([line1, line2], [line1.get_label(), line2.get_label()], loc="best")
 
@@ -95,12 +102,12 @@ line44, = ax4.plot(time_PIOT_long, data_PIOT_long['Plug1_measured_P'], label='Po
 ax4.set_ylabel('EV1 Consumed\n Power [kW]', fontsize=DefFontSize * 1, color = EVSEcolors[0])
 ax4.set_xlabel('Time [h:m]', fontsize=DefFontSize * 1)
 ax4.legend(loc="best")
-ax4.set_ylim(4.5, 6.3)
+ax4.set_ylim(6, 10.5)
 ax55 = ax4.twinx()
 line55, = ax55.plot(time_PIOT_long, data_PIOT_long['Plug2_measured_P'], color=EVSEcolors[1], label='Power to EV2')
 ax55.set_ylabel('EV2 Consumed\nPower [kW]', fontsize=DefFontSize * 1, color = EVSEcolors[1])
 ax4.legend([line44, line55], [line44.get_label(), line55.get_label()], loc="best")
-ax55.set_ylim(8.3, 8.7)
+ax55.set_ylim(6, 10.5)
 
 # Show x-ticks only on the bottom plot
 plt.setp(ax1.get_xticklabels(), visible=False)
@@ -111,7 +118,33 @@ plt.tight_layout()
 plt.savefig('./graphs/Combined_All_Plots.pdf')
 #plt.show()
 
-'''fig, ax1 = plt.subplots(figsize=(15, 5))
+
+fig = plt.figure()
+plt.plot(time_CH, data_CH['priority_VA0'])
+plt.plot(time_CH, data_CH['priority_VA1'])
+# Adding titles and labels
+plt.title('Data over Time')
+plt.xlabel('Time (time_CH)')
+plt.ylabel('Data (data_CH)')
+
+# Show the plot
+plt.show()
+
+
+'''
+plt.plot(time_CH, data_CH['priority_VA0'])
+plt.plot(time_CH, data_CH['priority_VA1'])
+# Adding titles and labels
+plt.title('Data over Time')
+plt.xlabel('Time (time_CH)')
+plt.ylabel('Data (data_CH)')
+
+# Show the plot
+plt.show()
+
+
+
+fig, ax1 = plt.subplots(figsize=(15, 5))
 ax1.grid(True)
 line1, = ax1.plot(time_PIOT_long, data_PIOT_long['REG_FREQUENCY'], label='Measured frequency', color=EVSEcolors[0])
 ax1.set_ylim(49.97, 50.055) 
